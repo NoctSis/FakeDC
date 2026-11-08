@@ -155,40 +155,55 @@ def cubic_bezier(p0, p1, p2, p3, t):
             a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1])
 
 
-def make_fg(size):
-    """前景：一条从左上（亮）下沉到右下（暗）的调光曲线 + 起点圆点。
+def rrect_cov(x, y, cx, cy, hw, hh, r, aa):
+    """圆角矩形的覆盖率（SDF，带抗锯齿）。hw/hh = 半宽/半高，r = 圆角半径。"""
+    qx = abs(x - cx) - (hw - r)
+    qy = abs(y - cy) - (hh - r)
+    d = math.hypot(max(qx, 0.0), max(qy, 0.0)) + min(max(qx, qy), 0.0) - r
+    return clamp01(0.5 - d / aa)
 
-    合成方式（这是上一版画错的地方）：
-      用 **预乘 alpha** 正确叠加「光晕」与「线条」，再统一转回直通 alpha。
-      上一版把 glow 当颜色乘数却没参与 alpha，结果整片画布被写成半透明
-      灰白（xxxhdpi 下 41821 个 alpha=255 的像素，图标糊成一坨）。
+
+def make_fg(size):
+    """前景：**5 根递减的竖条**（亮度档位）+ 底部对齐，表示"亮度被卡在下限之上"。
+
+    为什么从「一条曲线」换成「一排竖条」（v277，用户提出与某同类模块图标相似）：
+      · 曲线 = 亮度随滑块衰减，语义对，但"一条曲线"是同类应用的高频母题，
+        桌面上容易和别家撞脸；
+      · 竖条 = **档位**，更贴这个模块实际干的事（把面板钉在某一档上，不低于它）；
+      · 配色不用彩虹：蓝→绿→橙在 5 根上会变成"信号格"，显得杂。
+        改为「前 4 根蓝色逐档变暗 + 最后一根橙色」，橙色那根正好标记**下限**，
+        正好对应这个模块干的事（亮度不低于某档）；
+      · 5 根（奇数）让中心那根正好压在画布正中 —— 自适应图标裁成圆形后重心稳，
+        且 check_icon 的「中心必须是实心图形」一项天然满足。
+
+    参数都是 108dp 基准坐标，最后按 size/108 缩放。
     """
     s = size / BASE
     cx = cy = (size - 1) / 2.0
 
-    # 曲线控制点（108dp 坐标系）—— 形如亮度随滑块下降而衰减
-    #
-    # v244.1 构图修正（用 img2ascii.py 把图标转成字符网格后才发现）：
-    #   首版 P0=(27,33) P3=(81,75)，实际只占画布 36%~84% 横向、25%~74% 纵向，
-    #   而且起点太靠左上 —— 圆形裁切后整条曲线挤在左上到右中的窄条里，
-    #   右侧和下方大片空白，桌面小图下看起来"缩在角落"。
-    #   现在让曲线贯穿安全区（x 24→86, y 28→82），重心回到中心。
-    # v244.2 加大落差（字符网格显示首版倾角只有约 32°，圆形裁切下像横杠，
-    #   缺少"亮度沉下去"的动势）。改成 24°→82°，倾角约 40°，起点更高、末端更低。
-    P0 = (24.0, 24.0)      # 起点：亮（更高）
-    P1 = (42.0, 30.0)
-    P2 = (54.0, 60.0)
-    P3 = (86.0, 82.0)      # 末端：沉到低（更低）
-    dot_c = P0
-    dot_r = 5.2            # dp
+    N = 5                  # 根数（奇数 → 中间那根在正中）
+    W = 8.0                # 条宽 dp
+    G = 4.0                # 间距 dp
+    BOTTOM = 84.0          # 底对齐线 dp
+    HEIGHTS = [58.0, 50.0, 42.0, 34.0, 26.0]   # 左高右低：亮度档位递减
+    R = 2.5                # 圆角半径 dp
+    AA = 0.9               # 抗锯齿带宽 dp
+    GLOW_W = 4.5           # 光晕外扩 dp
+    GLOW_A = 0.20          # 光晕最大不透明度
 
-    N = 240
-    samples = [cubic_bezier(P0, P1, P2, P3, i / (N - 1.0)) for i in range(N)]
+    total = N * W + (N - 1) * G
+    left = 54.0 - total / 2.0
 
-    half = 3.0             # dp，线半宽
-    aa = 1.0               # dp，抗锯齿带宽
-    glow_w = 6.5           # dp，光晕外扩
-    glow_a = 0.34          # 光晕最大不透明度
+    bars = []
+    for i, h in enumerate(HEIGHTS):
+        bx = left + i * (W + G) + W / 2.0          # 中心 x
+        by = BOTTOM - h / 2.0                      # 中心 y
+        # 前 N-1 根：蓝色逐档变暗（亮度递减）；最后一根用橙色，标记"下限"
+        if i == N - 1:
+            col = CURVE_LO
+        else:
+            col = lerp(CURVE_HI, (0x35, 0x5C, 0x8A), i / float(N - 2))
+        bars.append((bx, by, W / 2.0, h / 2.0, col))
 
     px = []
     for y in range(size):
@@ -197,49 +212,31 @@ def make_fg(size):
         for x in range(size):
             dx = (x - cx) / s + BASE / 2.0
 
-            # ---- 到曲线的最短距离（dp）----
-            best = 1e9
-            for (sx, sy) in samples:
-                d2 = (dx - sx) ** 2 + (dy - sy) ** 2
-                if d2 < best:
-                    best = d2
-            dist = math.sqrt(best)
+            cov = 0.0
+            col = (0, 0, 0)
+            dist = 1e9
+            for (bx, by, hw, hh, c) in bars:
+                cv = rrect_cov(dx, dy, bx, by, hw, hh, R, AA)
+                if cv > cov:
+                    cov = cv
+                    col = c
+                # 到条形边缘的距离（用于光晕）
+                dq = math.hypot(max(abs(dx - bx) - hw, 0.0),
+                                max(abs(dy - by) - hh, 0.0))
+                if dq < dist:
+                    dist = dq
 
-            # ---- 到起点圆点的距离（dp）----
-            dist_dot = math.hypot(dx - dot_c[0], dy - dot_c[1])
-
-            # 线覆盖率：dist < half 内实心，之后 aa 宽度内衰减
-            cov_line = clamp01((half + aa - dist) / aa)
-            # 圆点覆盖率
-            cov_dot = clamp01((dot_r + aa - dist_dot) / aa)
-            # 取两者并集（圆点压在曲线起点上）
-            cov = max(cov_line, cov_dot)
-
-            # 光晕：只在离图形较近处存在，且中心更亮
-            gd = min(dist, dist_dot)
-            glow = clamp01((half + glow_w - gd) / glow_w) ** 1.6 * glow_a
+            glow = clamp01((GLOW_W - dist) / GLOW_W) ** 1.6 * GLOW_A
 
             if cov < 0.003 and glow < 0.003:
                 row.append((0, 0, 0, 0))
                 continue
 
-            # 沿线渐变：起点蓝 → 末端橙（用参数进度而不是 dy，更贴曲线）
-            prog = clamp01(((dx - P0[0]) ** 2 + (dy - P0[1]) ** 2) ** 0.5
-                           / math.hypot(P3[0] - P0[0], P3[1] - P0[1]))
-            cr, cg, cb = hue_lerp(CURVE_HI, CURVE_LO, prog ** 1.35)
-
-            # 圆点固定用高亮色（它是"当前亮度"标记）
-            if cov_dot > cov_line:
-                cr, cg, cb = CURVE_HI
-
-            # ---- 预乘 alpha 合成：光晕在下，线条在上 ----
+            cr, cg, cb = col
             gr, gg, gb = GLOW
-            pr = gr * glow
-            pg = gg * glow
-            pb = gb * glow
-            pa = glow
 
-            # 线条 over 光晕
+            # 预乘 alpha：光晕在下，条形在上
+            pr, pg, pb, pa = gr * glow, gg * glow, gb * glow, glow
             nr = cr * cov + pr * (1.0 - cov)
             ng = cg * cov + pg * (1.0 - cov)
             nb = cb * cov + pb * (1.0 - cov)
@@ -249,10 +246,7 @@ def make_fg(size):
                 row.append((0, 0, 0, 0))
                 continue
 
-            # 预乘结果已是「最终色 × alpha」，转回直通 alpha 需除以 na。
-            # 注意：nr/ng/nb 是 **0..255** 量级（配色表就是 0..255），
-            # 所以这里只能 clamp 到 255，绝不能 clamp01 —— 上一版就栽在这，
-            # 144 被压成 1.0 再乘 255 = 纯白，整个图标变成一团白。
+            # 注意量纲：配色是 0..255，clamp 到 255，**不能** clamp01
             row.append((int(max(0, min(255, nr / na))),
                         int(max(0, min(255, ng / na))),
                         int(max(0, min(255, nb / na))),
