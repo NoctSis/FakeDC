@@ -9,6 +9,14 @@ Android / LSPosed 模块 ｜ 作用域 `system` ｜ libxposed API 102 ｜ GPL-3.
 > perceived brightness with a display color-matrix gain, so the panel never runs at a low duty cycle.
 > Same perceived brightness, no low-brightness PWM.
 
+## 下载
+
+APK 在 **[Releases](https://github.com/NoctSis/FakeDC/releases)** 里（仓库只放源码，构建产物不入库）。
+
+- `FakeDC-1.0.2.apk` — 正式签名，覆盖安装即可升级
+- 需要 **LSPosed**（libxposed API 102），作用域 `system`
+- 装完必须在 LSPosed 里启用模块 → **重启**，否则模块不会注入 `system_server`
+
 ---
 
 ## 它解决什么问题
