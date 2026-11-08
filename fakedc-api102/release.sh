@@ -4,10 +4,10 @@
 #
 # 目录约定（2026-11-08 用户定）：
 #   bata/产物APK/api102系/   ← build.sh 的默认输出，随便堆，可以整体清掉
-#   work/release/            ← 只放**当前正式版**，随时能发给别人
+#   release/                 ← 只放**当前正式版**，随时能发给别人（仓库根目录下）
 #
 # 用法：
-#   bash release.sh 1.0.3          # 从暂存区搬到 work/release
+#   bash release.sh 1.0.3          # 从暂存区搬到 REA/release
 #   bash release.sh 1.0.3 --build  # 先重新构建再搬
 #
 # 为什么要分开：2026-11-08 清理历史包时，把 work/产物APK 整个删了，
@@ -20,7 +20,7 @@ VERNAME="${1:-}"
 [ -z "$VERNAME" ] && { echo "用法: bash release.sh <versionName> [--build]"; exit 1; }
 
 STAGE="$HERE/../bata/产物APK/api102系"
-RELEASE="$HERE/../work/release"
+RELEASE="$HERE/../release"
 NAME="FakeDC-${VERNAME}.apk"
 
 # 可选：先构建（版本号取 manifest 里的 versionCode）
@@ -41,7 +41,7 @@ mkdir -p "$RELEASE"
 # 只允许一个正式版：先看有没有别的
 others=$(ls "$RELEASE"/*.apk 2>/dev/null | grep -v "$NAME" || true)
 
-echo "[2/3] 复制到 work/release"
+echo "[2/3] 复制到 REA/release"
 cp -f "$SRC" "$RELEASE/$NAME"
 
 echo "[3/3] 校验"
@@ -53,7 +53,7 @@ echo "    sha256: $SHA"
 
 if [ -n "$others" ]; then
     echo
-    echo "    注意：work/release 里还有别的版本，正式版目录建议只留一个："
+    echo "    注意：release 目录里还有别的版本，正式版目录建议只留一个："
     echo "$others" | sed 's/^/      /'
 fi
 
