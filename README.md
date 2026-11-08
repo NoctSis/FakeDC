@@ -13,7 +13,7 @@ Android / LSPosed 模块 ｜ 作用域 `system` ｜ libxposed API 102 ｜ GPL-3.
 
 APK 在 **[Releases](https://github.com/NoctSis/FakeDC/releases)** 里（仓库只放源码，构建产物不入库）。
 
-- `FakeDC-1.0.2.apk` — 正式签名，覆盖安装即可升级
+- `FakeDC-1.0.3.apk` — 正式签名，覆盖安装即可升级
 - 需要 **LSPosed**（libxposed API 102），作用域 `system`
 - 装完必须在 LSPosed 里启用模块 → **重启**，否则模块不会注入 `system_server`
 
@@ -104,8 +104,8 @@ OLED 在低亮度靠 **PWM 调光**：不是把电流调小，而是让像素高
 
 ```bash
 cd fakedc-api102
-bash build.sh 276 1.0.2        # 用法: build.sh <versionCode> [versionName]
-# 产物: ../work/产物APK/api102系/FakeDC-1.0.2.apk
+bash build.sh 277 1.0.3        # 用法: build.sh <versionCode> [versionName]
+# 产物: ../work/产物APK/api102系/FakeDC-1.0.3.apk
 ```
 
 管线：`javac → d8 → aapt2 compile/link → zip 追加 dex 与 META-INF/xposed/* → zipalign → apksigner`。
@@ -113,14 +113,14 @@ bash build.sh 276 1.0.2        # 用法: build.sh <versionCode> [versionName]
 签名：默认用仓库内密钥以保持升级一致；别人的机器上请用自己的：
 
 ```bash
-FDKS=/absolute/path/my.jks FDKSPASS=你的密码 bash build.sh 276 1.0.2
+FDKS=/absolute/path/my.jks FDKSPASS=你的密码 bash build.sh 277 1.0.3
 ```
 
 交付前自检（两个独立判官，共 57 + 15 项）：
 
 ```bash
-bash verify.sh 276        # 注入前提 / 配置通道 / 逻辑正确性 / 热路径纪律 / UI / 交付卫生
-bash crosscheck.sh 276    # dex 二进制通道 / 打包字节 / 公式双实现对拍 / 仓库可追溯性
+bash verify.sh 277        # 注入前提 / 配置通道 / 逻辑正确性 / 热路径纪律 / UI / 交付卫生
+bash crosscheck.sh 277    # dex 二进制通道 / 打包字节 / 公式双实现对拍 / 仓库可追溯性
 ```
 
 ## 目录
