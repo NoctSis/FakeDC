@@ -3,7 +3,10 @@
 # fakedc-api102 构建脚本（新 API 102 主力线，v213 起）
 #
 # 用法：bash build.sh [版本号]        默认 213
-# 产物：../work/产物APK/api102系/FakeDC-<versionName>.apk
+# 产物：先把包放进 bata 暂存区（默认 ../bata/产物APK/api102系/），
+#       确认是正式版后再用 release.sh 提升到 ../work/release/。
+#       为什么这么分：bata/ 是"可以随便堆"的暂存区，work/release/ 只放当前正式版，
+#       避免又一次把正式包和历史包一起删掉（2026-11-08 真发生过）。
 #
 # 管线：javac → d8 → aapt2 compile/link → zipfile 追加 → zipalign → apksigner
 #
@@ -22,6 +25,9 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 VER="${1:-213}"
 # v274: 第二个参数可指定 versionName（如 1.0.0），默认 0.5.VER
 VNAME="${2:-0.5.${VER}}"
+# 暂存输出目录（可用 OUT_DIR 覆盖）：默认进 bata，正式版由 release.sh 搬到 work/release
+OUT_DIR="${OUT_DIR:-../bata/产物APK/api102系}"
+APK_OUT="$OUT_DIR/FakeDC-${VNAME}.apk"
 # 工具链路径：可用环境变量覆盖（默认值是本机布局，别人在自己机器上请按需设置）
 JDK="${JDK_PATH:-/d/Program Files/Java/jdk-21.0.12.1+1}"
 AJ="${ANDROID_JAR:-D:/Android/sdk/platforms/android-37/android.jar}"
@@ -196,32 +202,32 @@ echo "[5/6] zipalign"
 
 echo "[6/6] apksigner 签名"
 export JAVA_HOME="$JDK"
-mkdir -p "../work/产物APK/api102系"
+mkdir -p "$OUT_DIR"
 "$BT/apksigner.bat" sign \
     --ks "$KS" --ks-pass pass:"$KSPASS" --key-pass pass:"$KSPASS" \
     --ks-key-alias fakedc \
-    --out "../work/产物APK/api102系/FakeDC-${VNAME}.apk" out/final-aligned.apk
+    --out "$APK_OUT" out/final-aligned.apk
 
 echo
 echo "=== 自检 ==="
-"$BT/apksigner.bat" verify "../work/产物APK/api102系/FakeDC-${VNAME}.apk" \
+"$BT/apksigner.bat" verify "$APK_OUT" \
     && echo "签名: OK"
-echo -n "scope.list: "; unzip -p "../work/产物APK/api102系/FakeDC-${VNAME}.apk" META-INF/xposed/scope.list
-echo -n "java_init : "; unzip -p "../work/产物APK/api102系/FakeDC-${VNAME}.apk" META-INF/xposed/java_init.list
+echo -n "scope.list: "; unzip -p "$APK_OUT" META-INF/xposed/scope.list
+echo -n "java_init : "; unzip -p "$APK_OUT" META-INF/xposed/java_init.list
 echo "--- module.prop / scope.list（v215 起：静态作用域 + system）---"
-unzip -p "../work/产物APK/api102系/FakeDC-${VNAME}.apk" META-INF/xposed/module.prop
+unzip -p "$APK_OUT" META-INF/xposed/module.prop
 # 本 LSPosed 分支（lin.xposed 2.4.1）守护进程只认 system 作为系统框架标识：
 # 写 android 静默无效（勾了不注入），必须写 system（设备上其他模块均为 system）。
-if [ "$(unzip -p "../work/产物APK/api102系/FakeDC-${VNAME}.apk" META-INF/xposed/scope.list | tr -d '[:space:]')" != "system" ]; then
+if [ "$(unzip -p "$APK_OUT" META-INF/xposed/scope.list | tr -d '[:space:]')" != "system" ]; then
     echo "!! scope.list 必须是 system（android 在本分支静默无效），构建中止"; exit 1
 fi
 # 静态作用域：装好即按推荐作用域注入，不需要用户去列表里勾
-if unzip -p "../work/产物APK/api102系/FakeDC-${VNAME}.apk" META-INF/xposed/module.prop | grep -q "staticScope=false"; then
+if unzip -p "$APK_OUT" META-INF/xposed/module.prop | grep -q "staticScope=false"; then
     echo "!! staticScope=false 需要用户手动勾作用域，本次要求 true，构建中止"; exit 1
 fi
-echo -n "dex 大小 : "; unzip -l "../work/产物APK/api102系/FakeDC-${VNAME}.apk" classes.dex | tail -1 | awk '{print $1" 字节"}'
+echo -n "dex 大小 : "; unzip -l "$APK_OUT" classes.dex | tail -1 | awk '{print $1" 字节"}'
 
 # 清中间产物，只留 APK
 python -c "import os;[os.remove(f) for f in ['out/classes.dex','out/res.zip','out/base.apk','out/final-unsigned.apk','out/final-aligned.apk'] if os.path.exists(f)];import shutil;shutil.rmtree('out/classes',ignore_errors=True)"
 echo
-echo "完成: ../work/产物APK/api102系/FakeDC-${VNAME}.apk"
+echo "完成（暂存）: $APK_OUT"
