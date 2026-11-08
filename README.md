@@ -136,6 +136,8 @@ fakedc-api102/
     BuildInfo.java         编译期注入的版本身份（由 build.sh 生成）
   app/src/main/res/        图标与字符串
   app/src/main/resources/META-INF/xposed/   module.prop / scope.list / java_init.list
+  tools/make_icon.py       图标生成（纯几何 + 渐变，程序化产出，无第三方素材）
+  tools/check_icon.py      图标自检，26 项（尺寸/安全区/不透明率/渐变两端/中心像素）
   build.sh                 构建（javac → d8 → aapt2 → zip → zipalign → apksigner）
   verify.sh                交付前自检，57 项
   crosscheck.sh            第二判官，独立复算，15 项
