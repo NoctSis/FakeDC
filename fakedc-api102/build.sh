@@ -3,7 +3,7 @@
 # fakedc-api102 构建脚本（新 API 102 主力线，v213 起）
 #
 # 用法：bash build.sh [版本号]        默认 213
-# 产物：先把包放进 bata 暂存区（默认 ../bata/产物APK/api102系/），
+# 产物：先把包放进 bata 暂存区（默认 ../bata/apk/），
 #       确认是正式版后再用 release.sh 提升到 ../work/release/。
 #       为什么这么分：bata/ 是"可以随便堆"的暂存区，work/release/ 只放当前正式版，
 #       避免又一次把正式包和历史包一起删掉（2026-11-08 真发生过）。
@@ -26,7 +26,7 @@ VER="${1:-213}"
 # v274: 第二个参数可指定 versionName（如 1.0.0），默认 0.5.VER
 VNAME="${2:-0.5.${VER}}"
 # 暂存输出目录（可用 OUT_DIR 覆盖）：默认进 bata，正式版由 release.sh 搬到 work/release
-OUT_DIR="${OUT_DIR:-../bata/产物APK/api102系}"
+OUT_DIR="${OUT_DIR:-../bata/apk}"
 APK_OUT="$OUT_DIR/FakeDC-${VNAME}.apk"
 # 工具链路径：可用环境变量覆盖（默认值是本机布局，别人在自己机器上请按需设置）
 JDK="${JDK_PATH:-/d/Program Files/Java/jdk-21.0.12.1+1}"
