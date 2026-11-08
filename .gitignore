@@ -1,0 +1,22 @@
+# 构建产物
+out/
+work/
+build_manual/
+*.apk
+*.apk.idsig
+*.dex
+*.class
+
+# 本地密钥（私钥永不入仓；缺失时 build.sh 会自动生成 .keystore/debug.jks）
+.keystore/
+libs/
+*.jks
+
+# 临时
+.tmp/
+.gradle/
+
+# 系统垃圾
+.DS_Store
+Thumbs.db
+desktop.ini

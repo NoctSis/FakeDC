@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- v244: 应用名改为中文 + 带功能提示。
+         用户原话：「做一个好一点的图标我现在这样分辨不出是什么软件」——
+         桌面图标下方那行字也是识别依据，只写 "FakeDC" 对中文用户没有信息量。 -->
+    <string name="app_name">伪DC调光</string>
+</resources>
