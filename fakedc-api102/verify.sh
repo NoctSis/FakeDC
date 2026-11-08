@@ -55,7 +55,9 @@ SRC="app/src/main/java/com/lumen/fakedc"
 MOD="$SRC/FakeDCModule.java"
 UI="$SRC/SettingsActivity.java"
 CFG="$SRC/Cfg.java"
-APK="$(ls -t ../work/产物APK/api102系/FakeDC-*.apk 2>/dev/null | grep -v idsig | head -1)"
+# v277: 产物分两处 —— bata 暂存区（构建默认输出）+ work/release（正式版）
+VNAME=$(grep -o 'android:versionName="[^"]*"' app/src/main/AndroidManifest.xml 2>/dev/null | head -1 | sed 's/.*="//; s/"$//')
+APK="$(ls -t ../bata/产物APK/api102系/FakeDC-${VNAME}.apk ../work/release/FakeDC-*.apk 2>/dev/null | head -1)"
 
 # 临时目录必须放在项目内：Git Bash 的 /tmp 就是 C:\Users\...\Temp，
 # 与 Windows 侧 python / dexdump 看到的不是同一个地方（v233 踩过）。
