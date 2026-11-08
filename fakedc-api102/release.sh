@@ -3,7 +3,7 @@
 # 把某个版本从「暂存区」提升为「正式版」
 #
 # 目录约定（2026-11-08 用户定）：
-#   bata/产物APK/api102系/   ← build.sh 的默认输出，随便堆，可以整体清掉
+#   bata/apk/                ← build.sh 的默认输出，随便堆，可以整体清掉
 #   release/                 ← 只放**当前正式版**，随时能发给别人（仓库根目录下）
 #
 # 用法：
@@ -19,7 +19,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 VERNAME="${1:-}"
 [ -z "$VERNAME" ] && { echo "用法: bash release.sh <versionName> [--build]"; exit 1; }
 
-STAGE="$HERE/../bata/产物APK/api102系"
+STAGE="$HERE/../bata/apk"
 RELEASE="$HERE/../release"
 NAME="FakeDC-${VERNAME}.apk"
 
