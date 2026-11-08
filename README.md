@@ -143,7 +143,7 @@ README.md  CREDITS.md  LICENSE
 ```
 
 > 开发过程中还有两份本地内容**未随仓库发布**：旧实现 `fakedc-legacy/`（经典 Xposed API，
-> 仅作版本回溯）与逆向笔记 `REA-DC-知识库/`（真机实测、踩坑与决策记录）。
+> 仅作版本回溯）与开发笔记 `REA-DC-知识库/`（真机实测、踩坑与决策记录）。
 
 ## 深入原理
 
@@ -180,7 +180,6 @@ Redmi K60 Ultra（`corot`，MTK）/ Android 13 / MIUI / LSPosed（libxposed API 
 | [ztc1997/FakeDCBacklight](https://github.com/ztc1997/FakeDCBacklight) | 设计参照（钉背光 + 压暗的思路、HAL 最低亮度前提）。**未复制代码** | 无 LICENSE 文件（仓库已归档） |
 | [libxposed/api](https://github.com/libxposed/api) `102.0.0` | 编译期 API 依赖 | Apache-2.0 |
 | [LSPosed](https://github.com/LSPosed/LSPosed) | 运行框架 | GPL-3.0 |
-| HyperLux（闭源 APK） | 仅行为层参照 | — |
 
 ## 许可证
 
