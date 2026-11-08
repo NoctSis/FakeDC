@@ -31,7 +31,7 @@ SRC="app/src/main/java/com/lumen/fakedc"
 # v274: 按源 manifest 的 versionName 找包（不再假设 0.5.VER 命名）
 VNAME=$(grep -o 'android:versionName="[^"]*"' app/src/main/AndroidManifest.xml 2>/dev/null | head -1 | sed 's/.*="//; s/"$//')
 # v277: 产物分两处 —— bata 暂存区（构建默认输出）+ release/（正式版，仓库根目录）
-APK="$(ls -t ../bata/产物APK/api102系/FakeDC-${VNAME}.apk ../release/FakeDC-*.apk 2>/dev/null | head -1)"
+APK="$(ls -t ../bata/apk/FakeDC-${VNAME}.apk ../release/FakeDC-*.apk 2>/dev/null | head -1)"
 
 PASS=0; FAIL=0; FAILED=()
 ok()  { PASS=$((PASS+1)); printf "  \033[32m✓\033[0m %s\n" "$1"; }
