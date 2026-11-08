@@ -105,8 +105,13 @@ OLED 在低亮度靠 **PWM 调光**：不是把电流调小，而是让像素高
 ```bash
 cd fakedc-api102
 bash build.sh 277 1.0.3        # 用法: build.sh <versionCode> [versionName]
-# 产物: ../work/产物APK/api102系/FakeDC-1.0.3.apk
+# 产物: ../bata/产物APK/api102系/FakeDC-1.0.3.apk   （暂存区）
+
+bash release.sh 1.0.3           # 确认是正式版后，提升到 ../work/release/
+bash release.sh 1.0.3 --build   # 也可以一步：重新构建 + 提升
 ```
+
+产物目录可用 `OUT_DIR=... bash build.sh ...` 覆盖（默认 `../bata/产物APK/api102系/`）。
 
 管线：`javac → d8 → aapt2 compile/link → zip 追加 dex 与 META-INF/xposed/* → zipalign → apksigner`。
 
@@ -139,6 +144,7 @@ fakedc-api102/
   tools/make_icon.py       图标生成（纯几何 + 渐变，程序化产出，无第三方素材）
   tools/check_icon.py      图标自检，26 项（尺寸/安全区/不透明率/渐变两端/中心像素）
   build.sh                 构建（javac → d8 → aapt2 → zip → zipalign → apksigner）
+  release.sh               把暂存区的包提升为正式版（复制到 work/release/）
   verify.sh                交付前自检，57 项
   crosscheck.sh            第二判官，独立复算，15 项
 README.md  CREDITS.md  LICENSE
