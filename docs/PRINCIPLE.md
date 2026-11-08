@@ -335,4 +335,4 @@ user=0.025 tgt=0.020 gain=0.561 uAge=93s mtx=669 | 16:06:26
 | 调压暗曲线 | `gainFor()`（先确认不是读到错的 `t`） |
 | 加配置项 | `Cfg` 加 key + `CfgProvider` 加列 + UI 加控件（三处必须同时改） |
 | 改日志字段 | `reportStatus()`（UI 只是原样显示，不会解析） |
-| 支持 Android 新版本 | 先 `dumpsys display` / 反汇编 `services.jar` 确认挂点签名有没有变 |
+| 支持 Android 新版本 | 先 `dumpsys display` / 查 `services.jar`（或 AOSP 源码）确认挂点签名有没有变 |
